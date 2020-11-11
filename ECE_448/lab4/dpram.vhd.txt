@@ -1,0 +1,47 @@
+library ieee;
+use ieee.std_logic_1164.all; 
+use ieee.numeric_std.all;
+
+entity dpram is
+    generic (
+        w : integer := 16;  -- number of bits per RAM word 
+        k : integer := 14); -- 2^k = number of words in RAM 
+    port (
+        clk   : in std_logic;
+        wea   : in std_logic;
+        addra : in std_logic_vector(k-1 downto 0); 
+        dina  : in std_logic_vector(w-1 downto 0); 
+        douta : out std_logic_vector(w-1 downto 0); 
+        web   : in std_logic;
+        addrb : in std_logic_vector(k-1 downto 0); 
+        dinb  : in std_logic_vector(w-1 downto 0); 
+        doutb : out std_logic_vector(w-1 downto 0));
+end dpram;
+
+architecture Behavioral of dpram is
+    type ram_type is array (0 to 2**k-1) of std_logic_vector (w-1 downto 0); 
+    shared variable RAM : ram_type := (others => (others => '0'));
+begin
+   process (clk)
+   begin
+     if rising_edge(clk) then 
+       if (wea = '1') then
+          RAM(to_integer(unsigned(addra))) := dina; 
+       else
+          douta <= RAM(to_integer(unsigned(addra))); 
+       end if;
+     end if;
+   end process;
+   
+   process (clk)
+   begin
+     if rising_edge(clk) then 
+       if (web = '1') then 
+          RAM(to_integer(unsigned(addrb))) := dinb;
+       else
+          doutb <= RAM(to_integer(unsigned(addrb)));
+       end if;
+     end if;
+   end process;
+   
+end Behavioral;

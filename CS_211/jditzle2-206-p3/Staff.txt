@@ -1,0 +1,6 @@
+4
+Salaried	0001	Grace   Hopper		120000
+Volunteer	0892	James   Gosling		0
+Hourly 		9765	Dennis  Ritchie		8.50 
+Executive	5657	Donald  Knuth		340000
+

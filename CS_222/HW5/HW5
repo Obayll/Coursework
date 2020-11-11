@@ -1,0 +1,42 @@
+Script started on Tue Mar 21 18:23:59 2017
+mason% uname -a
+SunOS mason 5.10 Generic_150400-40 sun4u sparc SUNW,Sun-Fire-V890
+mason% vi HW5.c
+[24;1H[?1h="HW5.c" 70 lines, 2543 characters [H[J//  CS222  Homework 5[H
+//
+//  Name: Jordan Ditzler
+//
+//  Searches through a text file for a user word, displays if the word was found
+ and
+//  also how many chararacters there are in the file total
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int search_and_count(FILE *fp, char *word, int *n); int character_count(char *st
+r); // function prototypes
+
+int main() {
+int n; // counter for total characters
+[8CFILE *fp; // file pointer
+[8Cchar fName[100], word[100]; // the file name and word to be determined b
+y the user
+printf("Please input the text file name: "); // asks user for the .txt f
+ilename (including the .txt extension)[H[23B"HW5.c" 70 lines, 2543 characters[H[23B[K:q!
+[J[?1l>mason% cat item.txt
+item
+test
+word
+man
+earth
+moonmason% gcc HW5.c
+mason% a.out
+Please input the text file name: item.txt
+File found.
+Please input the word to search: earth
+User word was find in file.
+There are 24 total characters in the file.
+mason% ^D
+script done on Tue Mar 21 18:25:34 2017

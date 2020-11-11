@@ -1,0 +1,109 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity structure is
+    Port (
+        SW0, SW1, SW2, SW3, SW4, SW5, SW6, SW7, SW8, SW9 : in STD_LOGIC;
+        BTNU, BTNC, BTND : in STD_LOGIC;
+        CLK : in STD_LOGIC;
+        AN : out STD_LOGIC_VECTOR(3 downto 0);
+        C : out STD_LOGIC_VECTOR(6 downto 0)
+    );
+end structure;
+
+architecture Behavioral of structure is
+signal SW1p, SW2p, SW3p, SW4p, SW5p, SW6p, SW7p, SW8p, SW9p : STD_LOGIC;
+signal RSTp, STARTp, WINp : STD_LOGIC;
+signal EN_LFSR, INIT_LIGHTS, START_TIMER, EN_TIMER, TOGGLE_ALL, TOGGLE_OFF : STD_LOGIC;
+signal WIN, END_TIMER : STD_LOGIC;
+signal SSEG1, SSEG2, SSEG3 : STD_LOGIC_VECTOR(2 downto 0);
+constant K : integer := 20;
+constant DD : integer := 1000000;
+constant K_SSD : integer := 17;
+begin
+INPUT_INTERFACE : entity work.input_interface(Behavioral)
+    Generic map (
+        K => K,
+        DD => DD
+    )
+    Port map (
+        SW1 => SW1,
+        SW2 => SW2,
+        SW3 => SW3,
+        SW4 => SW4,
+        SW5 => SW5,
+        SW6 => SW6,
+        SW7 => SW7,
+        SW8 => SW8,
+        SW9 => SW9,
+        BTNU => BTNU,
+        BTNC => BTNC,
+        BTND => BTND,
+        CLK => CLK,
+        SW1p => SW1p,
+        SW2P => SW2p,
+        SW3p => SW3p,
+        SW4p => SW4p,
+        SW5p => SW5p,
+        SW6p => SW6p,
+        SW7p => SW7p,
+        SW8p => SW8p,
+        SW9p => SW9p,
+        RSTp => RSTp,
+        STARTp => STARTp,
+        WINp => WINp
+    );
+DATAPATH : entity work.datapath(Behavioral)
+    Port map (
+        SW0 => SW0,
+        SW1p => SW1p,
+        SW2p => SW2p,
+        SW3p => SW3p,
+        SW4p => SW4p,
+        SW5p => SW5p,
+        SW6p => SW6p,
+        SW7p => SW7p,
+        SW8p => SW8p,
+        SW9p => SW9p,
+        CLK => CLK,
+        RSTp => RSTp,
+        EN_LFSR => EN_LFSR,
+        INIT_LIGHTS => INIT_LIGHTS,
+        START_TIMER => START_TIMER,
+        EN_TIMER => EN_TIMER,
+        TOGGLE_ALL => TOGGLE_ALL,
+        TOGGLE_OFF => TOGGLE_OFF,
+        WIN => WIN,
+        END_TIMER => END_TIMER,
+        SSEG1 => SSEG1,
+        SSEG2 => SSEG2,
+        SSEG3 => SSEG3
+    );
+CONTROLLER : entity work.controller(Behavioral)
+    Port map (
+        RSTp => RSTp,
+        STARTp => STARTp,
+        WINp => WINp,
+        CLK => CLK,
+        EN_LFSR => EN_LFSR,
+        INIT_LIGHTS => INIT_LIGHTS,
+        START_TIMER => START_TIMER,
+        EN_TIMER => EN_TIMER,
+        TOGGLE_ALL => TOGGLE_ALL,
+        WIN => WIN,
+        END_TIMER => END_TIMER
+    );
+OUTPUT_INTERFACE : entity work.output_interface(Behavioral)
+    Generic map (
+        K => K_SSD
+    )
+    Port map (
+        SSEG1 => SSEG1,
+        SSEG2 => SSEG2,
+        SSEG3 => SSEG3,
+        CLK => CLK,
+        RST => RSTp,
+        AN => AN,
+        C => C
+    );
+end Behavioral;

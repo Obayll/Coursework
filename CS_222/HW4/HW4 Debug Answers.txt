@@ -1,0 +1,60 @@
+Jordan Ditzler
+G00967092
+
+Step1 #1)
+	How many errors appear? 17
+	How many warnings appear? 4
+
+Step #3)
+	Run the program, and at the prompt, enter the value 10.
+	What happens? The program asks for numbers of rolls to do, rolls a dice, displays the roll, asks user to continue, then quits.
+
+	How many times did the program roll the dice? 1 time.
+	How many times did you anticipate the program to roll? 10 times.
+
+Step #4)
+	How many times does the printf statement you added get executed? 1 time.
+	List the values output by the printf statement you added: i = 10
+ 
+	Compile and run the code again (using 10 as input). Did the warning message go away? Yes.
+
+Now answer the following questions:
+	How many times does the printf statement you added get executed? 1 time.
+	List the values output by the printf statement you added: i = 10
+
+Comment out the for loop, and copy it to the line below, this time without the semicolon.
+Compile and run the program again (using 10 as input). Now answer the questions:
+	How many times does the printf statement you added get executed? 2 times.
+	List the values output by the printf statement you added: i = 1 , i = 2 , i = 3 , i = 4 , i = 5 , i = 6 , i = 7 , i = 8 , i = 9
+
+	How many times have you been rolling the dice? 9 times.
+
+Compile and run the code again (using 10 as input):
+Answer the following questions:
+	How many times does the printf statement you added get executed? 10 times.
+	List the values output by the printf statement you added: i = 1 , i = 2 , i = 3 , i = 4 , i = 5 , i = 6 , i = 7 , i = 8 , i = 9 , i = 10
+
+Step #5:
+Answer the following questions:
+	How many times does the printf statement you added get executed? 11 times.
+	List the values output by the printf statement you added: i = 0 , i = 1 , i = 2 , i = 3 , i = 4 , i = 5 , i = 6 , i = 7 , i = 8 , i = 9 , i = 10
+ 
+
+Change back to i=1, and recompile, and run the code. Answer the following questions:
+	How many times does the printf statement you added get executed? 10 times.
+	List the values output by the printf statement you added: i = 1 , i = 2 , i = 3 , i = 4 , i = 5 , i = 6 , i = 7 , i = 8 , i = 9 , i = 10
+
+Step #6:  
+	List the function calls and their corresponding include files other than main and return:
+	printf(): stdio.h
+	scanf(): stdio.h
+	getchar(): stdio.h
+	system(): stdlib.h
+	srandom(): stdlib.h
+	random(): stdlib.h
+	time(): time.h
+
+	Briefly explain what does the program do: The program takes a number from the user and rolls a dice with 6 sides for how many times the user specified. The program displays each roll and asks the user for any character input before next roll is calculated and shown.
+
+
+gcc -o HW4_debug HW4_debug.c -Wall |& more

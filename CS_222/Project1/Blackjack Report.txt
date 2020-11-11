@@ -1,0 +1,9 @@
+Jordan Ditzler G00967092
+
+Blackjack Report
+
+All functions desired in the project outline have been implemented.
+
+Bugs:
+1) Both when asked to enter a bet(10-1000) or to enter an action to either hit or stand(1,2),
+an infinite loop occurs when the user does not input an int. I am unsure of how to fix this.

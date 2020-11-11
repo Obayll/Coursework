@@ -1,0 +1,83 @@
+library ieee;
+use ieee.std_logic_1164.all; 
+use ieee.numeric_std.all;
+
+entity controller is
+    port (
+        clk                      : in std_logic;
+        reset                    : in std_logic;
+        s, MiltMj, zi, zj        : in std_logic;
+        Wr, Li, Ei, Lj, Ej, Done : out std_logic
+    );
+end controller;
+architecture Behavioral of controller is
+    type state IS (S0, S1, S2, S3, S4);
+    signal state_reg, state_next : state;
+begin
+    state_machine : process(clk, reset)
+    begin
+        if (reset = '1') then
+            state_reg <= S0;
+        elsif (clk'event and clk = '1') then
+            state_reg <= state_next;
+        end if;
+     end process;
+
+     next_state : process(state_reg, s, MiltMj, zj, zi)
+     begin
+        state_next <= state_reg;
+
+        Done <= '0';
+        Wr   <= '0';
+        Li   <= '0';
+        Ei   <= '0';
+        Lj   <= '0';
+        Ej   <= '0';
+
+        case state_reg is
+            when S0 =>
+                Done <= '0';
+                Li   <= '1';
+                if (s = '1') then
+                    state_next <= S1;
+                else
+                    state_next <= S0;
+                 end if;
+            when S1 =>
+                Li <= '0';
+                Lj <= '1';
+                Ei <= '0';
+                Wr <= '0';
+                state_next <= S2;
+            when S2 =>
+                Lj <= '0';
+                Ej <= '0';
+                Wr <= '0';
+                state_next <= S3;
+            when S3 =>
+                if (MiltMj = '1') then
+                    Wr <= '1';
+                end if;
+                if (zj = '1') then
+                    if (zi = '1') then
+                        state_next <= S4;
+                    else
+                        Ei <= '1';
+                        state_next <= S1;
+                    end if;
+                else
+                    Ej <= '1';
+                    state_next <= S2;
+                end if;
+            when S4 =>
+                Wr <= '0';
+                Done <= '1';
+                if (s = '0') then
+                    state_next <= S0;
+                else
+                    state_next <= S4;
+                end if;
+            end case;
+        end process;
+
+end Behavioral;

@@ -1,0 +1,263 @@
+/*****************************************************************//**
+ * @file main_sampler_test.cpp
+ *
+ * @brief Basic test of nexys4 ddr mmio cores
+ *
+ * @author p chu
+ * @version v1.0: initial release
+ *********************************************************************/
+
+// #define _DEBUG
+#include <inttypes.h>
+#include <stdlib.h>
+#include "chu_init.h"
+#include "gpio_cores.h"
+#include "xadc_core.h"
+#include "sseg_core.h"
+#include "spi_core.h"
+#include "i2c_core.h"
+#include "ps2_core.h"
+#include "ddfs_core.h"
+#include "adsr_core.h"
+#include "sorter_core.h"
+
+#define MAX_SIZE 16384 // 2^14
+
+uint16_t sw_data[MAX_SIZE];
+uint16_t hw_data[MAX_SIZE];
+
+unsigned int seed = 0;
+
+TimerCore timer(get_slot_addr(BRIDGE_BASE, S0_SYS_TIMER));
+//UartCore uart((get_slot_addr(BRIDGE_BASE, S1_UART1)));
+GpoCore led(get_slot_addr(BRIDGE_BASE, S2_LED));
+GpiCore sw(get_slot_addr(BRIDGE_BASE, S3_SW));
+SorterCore sort(get_slot_addr(BRIDGE_BASE, S4_USER));
+XadcCore adc(get_slot_addr(BRIDGE_BASE, S5_XDAC));
+PwmCore pwm(get_slot_addr(BRIDGE_BASE, S6_PWM));
+DebounceCore btn(get_slot_addr(BRIDGE_BASE, S7_BTN));
+SsegCore sseg(get_slot_addr(BRIDGE_BASE, S8_SSEG));
+SpiCore spi(get_slot_addr(BRIDGE_BASE, S9_SPI));
+I2cCore adt7420(get_slot_addr(BRIDGE_BASE, S10_I2C));
+Ps2Core ps2(get_slot_addr(BRIDGE_BASE, S11_PS2));
+DdfsCore ddfs(get_slot_addr(BRIDGE_BASE, S12_DDFS));
+AdsrCore adsr(get_slot_addr(BRIDGE_BASE, S13_ADSR), &ddfs);
+
+void sseg_reset(SsegCore *sseg_p) {
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		sseg_p->write_1ptn(0xff, i);
+	}
+
+	sseg_p->set_dp(0x00);
+
+	sleep_ms(100);
+}
+
+// pos = 0 -> lower 16
+// pos = 1 -> upper 16
+void sseg_time(SsegCore *sseg_p, uint32_t time, int pos) {
+	uint16_t newtime;
+	if (pos == 0) {
+		newtime = time;
+	} else {
+		newtime = time >> 16;
+	}
+
+	uint8_t pos3 = sseg_p->h2s((uint8_t)(newtime / 4096));
+	newtime %= 4096;
+	uint8_t pos2 = sseg_p->h2s((uint8_t)(newtime / 256));
+	newtime %= 256;
+	uint8_t pos1 = sseg_p->h2s((uint8_t)(newtime / 16));
+	newtime %= 16;
+	uint8_t pos0 = sseg_p->h2s((uint8_t)(newtime));
+
+	sseg_p->write_1ptn(pos3, 3);
+	sseg_p->write_1ptn(pos2, 2);
+	sseg_p->write_1ptn(pos1, 1);
+	sseg_p->write_1ptn(pos0, 0);
+}
+
+void sseg_dashes(SsegCore *sseg_p) {
+	sseg_p->write_1ptn(63, 3);
+	sseg_p->write_1ptn(63, 2);
+	sseg_p->write_1ptn(63, 1);
+	sseg_p->write_1ptn(63, 0);
+}
+
+void sseg_disp(SsegCore *sseg_p, uint16_t i) {
+	uint8_t upadr = sseg_p->h2s((uint8_t)(i / 16));
+	uint8_t lowadr = sseg_p->h2s((uint8_t)(i % 16));
+	uint8_t upnum = sseg_p->h2s((uint8_t)(hw_data[i] / 16));
+	uint8_t lownum = sseg_p->h2s((uint8_t)(hw_data[i] % 16));
+
+	sseg_p->write_1ptn(upadr, 3);
+	sseg_p->write_1ptn(lowadr, 2);
+	sseg_p->write_1ptn(upnum, 1);
+	sseg_p->write_1ptn(lownum, 0);
+}
+
+// BTNU = 0
+// BTNR = 1
+// BTND = 2
+// BTNC = 4
+// BTNL = 3
+int btn_read(DebounceCore *db_p) {
+	if		(db_p->read_db(0)) return 0;
+	else if	(db_p->read_db(1)) return 1;
+	else if	(db_p->read_db(2)) return 2;
+	else if	(db_p->read_db(3)) return 3;
+	else if	(db_p->read_db(4)) return 4;
+	else					   return 5;
+}
+
+int sw_sort(int N) {
+	int m, t;
+
+	for (int i = 0; i < N-1; i++) {
+		m = i;
+
+        for (int j = i+1; j < N; j++)
+        	if (sw_data[j] > sw_data[m])
+        		m = j;
+
+        t = sw_data[m];
+        sw_data[m] = sw_data[i];
+        sw_data[i] = t;
+    }
+
+	return 1;
+}
+
+int main() {
+	sseg_reset(&sseg);
+	uart.disp("\n\r");
+
+	uint8_t k;
+	uint16_t ind = 0, N;
+	uint64_t swStart, swEnd, hwStart, hwEnd;
+	int inp = 5, state = -1, randFLAG = 0, swMS, hwMS;
+
+	while (1) {
+		while (state == -1) {
+			k = sw.read();
+			if (k > 14) k = 14;
+
+			N = 1;
+			for (int i = 0; i < k; i++) N *= 2;
+
+			for (int i = 0; i < N; i++) sw_data[i] = i;
+
+			sort.set_N(N);
+			sort.initialize_core_mem(sw_data);
+			sort.readout_core_mem(hw_data);
+
+			uart.disp(k);
+			uart.disp("\n\r");
+			uart.disp(N);
+			uart.disp("\n\r");
+
+			state = 0;
+		}
+		while (state == 0) {
+			if (N > 256) {
+				uart.disp("Idle Mode\n\r");
+				sseg_reset(&sseg);
+			} else {
+				uart.disp("Browsing Mode\n\r");
+				sseg_disp(&sseg, ind);
+			}
+
+			inp = btn_read(&btn);
+
+			if (inp == 0) {
+				if (ind >= N-1)ind = 0;
+				else ind++;
+			} else if (inp == 2) {
+				if (ind <= 0) ind = N-1;
+				else ind--;
+			}
+			else if (inp == 3) state = 1;
+			else if (inp == 4 and randFLAG == 1)  state = 2;
+
+			sleep_ms(100);
+		} inp = 5;
+
+		while (state == 1) {
+			srand(seed);
+			uart.disp("Initialize Mode\n\r");
+
+			for (int i = 0; i < N; i++) {
+				if (N <= 256)
+					sw_data[i] = (uint16_t)(rand() % 256);
+				else
+					sw_data[i] = (uint16_t)(((rand() % 256) << 8) | (rand() % 256));
+			}
+
+			sort.initialize_core_mem(sw_data);
+			sort.readout_core_mem(hw_data);
+
+			randFLAG = 1;
+			state = 0;
+
+			sleep_ms(100);
+		}
+
+		while (state == 2) {
+			sseg_dashes(&sseg);
+			uart.disp("Sort Mode\n\r");
+
+			timer.clear();
+			hwStart = timer.read_tick();
+			sort.start_sorting();
+			while (sort.done_sorting() < 1);
+			hwEnd = timer.read_tick() - hwStart;
+			hwMS = timer.read_time();
+			uart.disp("Hardware done\n\r");
+
+			timer.clear();
+			swStart = timer.read_tick();
+			while (sw_sort(N) < 1);
+			swEnd = timer.read_tick() - swStart;
+			swMS = timer.read_time();
+			uart.disp("Software done\n\r");
+
+			sort.readout_core_mem(hw_data);
+			randFLAG = 0;
+
+			uart.disp("Software time 1: ");
+			uart.disp((int)(swEnd >> 32), 16);
+			uart.disp("\n\rSoftware time 2: ");
+			uart.disp((int)swEnd, 16);
+			uart.disp("\n\rSoftware ms: ");
+			uart.disp(swMS);
+			uart.disp("\n\r");
+
+			uart.disp("Hardware time 1: ");
+			uart.disp((int)(hwEnd >> 32), 16);
+			uart.disp("\n\rHardware time 2: ");
+			uart.disp((int)hwEnd, 16);
+			uart.disp("\n\rHardware ms: ");
+			uart.disp(hwMS);
+			uart.disp("\n\r");
+
+			while (inp == 5 or inp == 4) {
+				inp = btn_read(&btn);
+
+				if (sw.read(15) == 0) {
+					if (sw.read(14) == 0) sseg_time(&sseg, swEnd, 0);
+					else sseg_time(&sseg, swEnd, 1);
+				} else {
+					if (sw.read(14) == 0) sseg_time(&sseg, hwEnd, 0);
+					else sseg_time(&sseg, hwEnd, 1);
+				}
+
+				sleep_ms(100);
+			} inp = 5;
+
+			state = -1;
+		}
+	} //while
+} //main
+

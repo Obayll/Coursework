@@ -1,0 +1,40 @@
+#include "sorter_core.h"
+
+SorterCore::SorterCore(uint32_t core_base_addr) {
+   base_addr = core_base_addr;
+   ctrl = 0;
+   N = 0;
+}
+
+SorterCore::~SorterCore() {}
+
+void SorterCore::set_N(uint16_t N) {
+	this->N = N;
+	io_write(base_addr, N_REG, this->N);
+}
+
+void SorterCore::initialize_core_mem(uint16_t *proc_mem) {
+	ctrl = rw_FIELD | init_FIELD;
+	io_write(base_addr, CTRL_REG, ctrl);
+	for (uint16_t i = 0; i < N; i++) {
+		ctrl = proc_mem[i];
+		io_write(base_addr, MEMW_ri_REG, ctrl);
+	}
+}
+
+void SorterCore::readout_core_mem(uint16_t *proc_mem) {
+	ctrl = init_FIELD;
+	io_write(base_addr, CTRL_REG, ctrl);
+	for (uint16_t i = 0; i < N; i++) {
+		proc_mem[i] = (uint16_t) io_read(base_addr, MEMR_ri_REG);
+	}
+}
+
+void SorterCore::start_sorting() {
+	ctrl = s_FIELD;
+	io_write(base_addr, CTRL_REG, ctrl);
+}
+
+uint32_t SorterCore::done_sorting() {
+	return io_read(base_addr, STATUS_REG);
+}

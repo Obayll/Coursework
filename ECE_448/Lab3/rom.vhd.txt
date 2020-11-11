@@ -1,0 +1,39 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity rom is
+    Port (
+        Addr : in STD_LOGIC_VECTOR(3 downto 0);
+        Mode : in STD_LOGIC_VECTOR(1 downto 0);
+        Dout : out STD_LOGIC_VECTOR(3 downto 0)
+    );
+end rom;
+
+architecture Behavioral of rom is
+type vector_data is record
+    Up : std_logic_vector(3 downto 0);
+    Down : std_logic_vector(3 downto 0);
+    Left : std_logic_vector(3 downto 0);
+    Right : std_logic_vector(3 downto 0);
+end record;
+type vector_array is array(0 to 8) of vector_data;
+    constant memory : vector_array := (
+        (x"0",x"2",x"0",x"4"),
+        (x"1",x"3",x"0",x"5"),
+        (x"2",x"0",x"0",x"6"),
+        (x"0",x"5",x"1",x"7"),
+        (x"4",x"6",x"2",x"8"),
+        (x"5",x"0",x"3",x"9"),
+        (x"0",x"8",x"4",x"0"),
+        (x"7",x"9",x"5",x"0"),
+        (x"8",x"0",x"6",x"0")
+    );
+begin
+with Mode select Dout <=
+    memory(to_integer(unsigned(Addr))).Up    when "00", -- Up
+    memory(to_integer(unsigned(Addr))).Down  when "01", -- Down
+    memory(to_integer(unsigned(Addr))).Left  when "10", -- Left
+    memory(to_integer(unsigned(Addr))).Right when "11", -- Right
+    x"0"                                     when others;
+end Behavioral;

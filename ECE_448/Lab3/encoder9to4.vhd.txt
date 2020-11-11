@@ -1,0 +1,25 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity encoder9to4 is
+    Port (
+        Input : in STD_LOGIC_VECTOR(8 downto 0);
+        Z : out STD_LOGIC;
+        Output : out STD_LOGIC_VECTOR(3 downto 0)
+    );
+end encoder9to4;
+
+architecture Behavioral of encoder9to4 is
+begin
+Output <=
+    "1000" when Input(8) = '1' else
+    "0111" when Input(7) = '1' else
+    "0110" when Input(6) = '1' else
+    "0101" when Input(5) = '1' else
+    "0100" when Input(4) = '1' else
+    "0011" when Input(3) = '1' else
+    "0010" when Input(2) = '1' else
+    "0001" when Input(1) = '1' else
+    "0000";
+Z <= '0' when Input = "000000000" else '1';
+end Behavioral;

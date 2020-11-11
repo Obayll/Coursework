@@ -1,0 +1,156 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
+
+entity fractal_datapath is
+    port (
+        clk, reset                         : in std_logic;
+        wr_data                            : in std_logic_vector(31 downto 0);
+        addr                               : in std_logic_vector(4 downto 0);
+        s0xy, s0x, s0y, enx, eny, enz, eni : in std_logic;
+        enix, eniy, enz0x, enz0y, ensr     : in std_logic;
+        sia, lda, ena, ldi, ldix, ldiy     : in std_logic;
+        wrram, d_next, en_d                : in std_logic;
+        start, check, zi, zix, ziy, done   : out std_logic;
+        rd_data                            : out std_logic_vector(31 downto 0)
+    );
+end fractal_datapath;
+
+architecture Behavioral of fractal_datapath is
+    constant step : sfixed := to_sfixed(0.00625, 3, -28);
+    signal RAM_addr : std_logic_vector(3 downto 0);
+    signal row_count, y_count : unsigned(3 downto 0);
+    signal x_count : unsigned(4 downto 0);
+    signal iter_count : unsigned(8 downto 0);
+    signal ens : std_logic;
+    signal reg_i : unsigned(8 downto 0);
+    signal regz0, regshift, RAM_out, mux_out : std_logic_vector(31 downto 0);
+    signal regz0x, regz0y : sfixed(3 downto -28);
+begin
+    RAM_addr <= std_logic_vector(row_count) when sia = '1' else addr(3 downto 0);
+    zi <= '1' when iter_count >= reg_i - 1 else '0';
+    zix <= '1' when x_count >= to_unsigned(31, 5) else '0';
+    ziy <= '1' when y_count >= to_unsigned(15, 4) else '0';
+    mux_out <= RAM_out when en_d = '1' else (0 => Done, others => '0');
+    
+    basic_iter : entity work.fractal_iter
+        port map (
+            clk   => clk,
+            init  => s0xy,
+            enr   => enz,
+            z0x   => regz0x,
+            z0y   => regz0y,
+            zi    => zi,
+            check => check
+        );
+    
+    RAM : entity work.fractal_RAM
+        port map (
+            clk => clk,
+            din => regshift,
+            we => wrram,
+            addr => RAM_addr,
+            dout => RAM_out
+        );
+    
+    reg_shift : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (ensr = '1' ) then
+                regshift <= regshift(30 downto 0)&(zi and not(check));
+            end if;
+        end if;
+    end process;
+    
+    reg_zvalues : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (enz = '1') then
+                regz0 <= wr_data;
+            end if;
+            
+            if (enz0x = '1') then
+                if (s0x = '1') then
+                    regz0x <= to_sfixed(regz0, 3, -28);
+                elsif (s0x = '0') then
+                    regz0x <= resize(regz0x + step, regz0x);
+                end if;
+            end if;
+            
+            if (enz0y = '1') then
+                if (s0y = '1') then
+                    regz0y <= to_sfixed(wr_data, 3, -28);
+                elsif (s0y = '0') then
+                    regz0y <= resize(regz0y + step, regz0y);
+                end if;
+            end if;
+        end if;
+    end process;
+    
+    reg_start : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (ensr = '1') then
+                start <= wr_data(0);
+            end if;
+        end if;
+    end process;
+    
+    reg_done : process(clk)
+    begin
+        if (en_d = '1') then
+            done <= '1';
+        end if;
+    end process;
+    
+    reg_iterator : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (eni = '1') then
+                reg_i <= unsigned(wr_data(8 downto 0));
+            end if;
+        end if;
+    end process;
+    
+    counter_zvalues : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (ldix = '1') then
+                x_count <= (others=>'0');
+            elsif (enix = '1') then
+                x_count <= x_count + 1;
+            end if;
+            
+            if (ldiy = '1') then
+                y_count <= (others=>'0');
+            elsif (eniy = '1') then
+                y_count <= y_count + 1;
+            end if;
+        end if;
+    end process;
+    
+    counter_row : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (lda = '1') then
+                row_count <= (others=>'0');
+            elsif (ena = '1') then
+                row_count <= row_count + 1;
+            end if;
+        end if;
+    end process;
+    
+    counter_iterator : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (ldi = '1') then
+                iter_count <= (others=>'0');
+            elsif (eni = '1') then
+                iter_count <= iter_count + 1;
+            end if;
+        end if;
+    end process;
+end Behavioral;

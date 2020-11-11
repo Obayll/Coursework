@@ -1,0 +1,27 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity decoder4to9 is
+    Port (
+        Input : in STD_LOGIC_VECTOR(3 downto 0);
+        En : in STD_LOGIC;
+        Output : out STD_LOGIC_VECTOR(8 downto 0)
+    );
+end decoder4to9;
+
+architecture Behavioral of decoder4to9 is
+signal EnInput : STD_LOGIC_VECTOR(4 downto 0);
+begin
+EnInput <= En & Input;
+With EnInput select Output <=
+    "000000001" when "10001",
+    "000000010" when "10010",
+    "000000100" when "10011",
+    "000001000" when "10100",
+    "000010000" when "10101",
+    "000100000" when "10110",
+    "001000000" when "10111",
+    "010000000" when "11000",
+    "100000000" when "11001",
+    "000000000" when others ;
+end Behavioral;

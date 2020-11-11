@@ -1,0 +1,104 @@
+library ieee;
+use ieee.std_logic_1164.all; 
+use ieee.numeric_std.all;
+
+entity datapath is
+    port (
+        clk                      : in std_logic;
+        wr_data                  : in std_logic_vector(31 downto 0);
+        addr                     : in std_logic_vector(4 downto 0);
+        write, read, cs          : in std_logic;
+        Wr, Li, Ei, Lj, Ej, Done : in std_logic;
+        s, MiltMj, zi, zj        : out std_logic;
+        rd_data                  : out std_logic_vector(31 downto 0)
+    );
+end datapath;
+architecture Behavioral of datapath is
+    signal WrN, WrS, WrL, WrMem, RdMem, RdStatus, Eri, Lri : std_logic;
+    signal Mi, Mj, mux_write                               : std_logic_vector(15 downto 0);
+    signal mux_enable, WrInit, Rd, s_r, Rd_r, WrInit_r     : std_logic;
+    signal ri, i, j, mux_addr                              : unsigned(13 downto 0);
+    signal N                                               : unsigned(15 downto 0);
+begin
+    WrN      <= write and cs and addr(1) and not(addr(0));
+    WrS      <= write and cs and addr(1) and addr(0);
+    WrL      <= write and cs and addr(1) and addr(0) and wr_data(1);
+    WrMem    <= write and cs and not(addr(1)) and not(addr(2)) and not(addr(0));
+    RdMem    <= read and cs;
+    RdStatus <= read and cs and addr(2);
+    Eri      <= WrMem or RdMem;
+    Lri      <= WrL;
+
+    mux_write  <= wr_data(15 downto 0) when s_r = '0' else Mj;
+    mux_addr   <= ri                   when s_r = '0' else i;
+    mux_enable <= WrInit               when s_r = '0' else Wr;
+
+    MiltMj <= '1' when Mi < Mj else '0';
+
+    counter_reg : process (clk)
+    begin
+        if (clk'event and clk = '1') then
+            if Lri = '1' then
+                ri <= (others => '0');
+            elsif Eri = '1' then
+                ri <= ri + 1;
+            end if;
+            
+            if Li = '1' then
+                i <= (others => '0');
+            elsif Ei = '1' then
+                i <= i + 1;
+            end if;
+            
+            if Lj = '1' then
+                j <= i + 1;
+            elsif Ej = '1' then
+                j <= j + 1;
+            end if ;
+        end if;
+    end process;
+
+    zi <= '1' when i = (N-2) else '0';
+    zj <= '1' when j = (N-1) else '0';
+
+    write_reg : process (clk)
+    begin
+        if (clk'event and clk = '1') then
+            if Wrs = '1' then
+                s_r <= wr_data(0);
+            end if;
+
+            if WrN = '1' then
+                N <= unsigned(wr_data(15 downto 0));
+            end if;
+
+            if Wrl = '1' then
+                WrInit_r <= wr_data(2);
+                Rd_r     <= not(wr_data(2));
+            end if;
+        end if;
+    end process;
+
+    s      <= s_r;
+    WrInit <= WrInit_r and WrMem;
+    Rd     <= (Rd_r and RdMem) or RdStatus;
+
+    RAM : entity work.dpram
+        port map (
+            clk   => clk,
+            wea   => mux_enable,
+            web   => Wr,
+            addra => std_logic_vector(mux_addr),
+            addrb => std_logic_vector(j),
+            dina  => mux_write,
+            dinb  => Mi,
+            douta => Mi,
+            doutb => Mj
+        );
+
+    rd_data(31 downto 16) <= x"0000";
+    rd_data(15 downto 0)  <= x"0000" when Rd = '0'
+                             else (0 => Done, others => '0') when addr(2) = '1'
+                             else Mi;
+
+end Behavioral;

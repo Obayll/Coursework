@@ -1,0 +1,48 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
+
+entity chu_fractal is
+    port(
+        clk     : in  std_logic;
+        reset   : in  std_logic;
+        -- slot interface
+        cs      : in  std_logic;
+        write   : in  std_logic;
+        read    : in  std_logic;
+        addr    : in  std_logic_vector(4 downto 0);
+        rd_data : out std_logic_vector(31 downto 0);
+        wr_data : in  std_logic_vector(31 downto 0)
+    );
+end chu_fractal;
+
+architecture Behavioral of chu_fractal is
+    signal start, check, zi, zix, ziy         : std_logic;
+    signal s0xy, s0x, s0y, enx, eny, enz, eni : std_logic;
+    signal enix, eniy, enz0x, enz0y, ensr     : std_logic;
+    signal sia, lda, ena, ldi, ldix, ldiy     : std_logic;
+    signal wrram, d_next, en_d, done          : std_logic;
+begin
+    datapath : entity work.fractal_datapath
+        port map (
+            clk => clk, reset => reset,
+            wr_data => wr_data, addr => addr,
+            s0xy => s0xy, s0x => s0x, s0y => s0y, enx => enx, eny => eny, enz => enz, eni => eni,
+            enix => enix, eniy => eniy, enz0x => enz0x, enz0y => enz0y, ensr => ensr,
+            sia => sia,  lda => lda,  ena => ena, ldi => ldi, ldix => ldix, ldiy => ldiy,
+            wrram => wrram, d_next => d_next, en_d => en_d, done => done,
+            start => start, check => check, zi => zi, zix => zix, ziy => ziy, rd_data => rd_data
+        );
+    controller : entity work.fractal_controller
+        port map (
+            clk => clk, reset => reset,
+            start => start, check => check, zi => zi, zix => zix, ziy => ziy,
+            s0xy => s0xy, s0x => s0x, s0y => s0y, enx => enx, eny => eny, enz => enz, eni => eni,
+            enix => enix, eniy => eniy, enz0x => enz0x, enz0y => enz0y, ensr => ensr,
+            sia => sia,  lda => lda,  ena => ena, ldi => ldi, ldix => ldix, ldiy => ldiy,
+            wrram => wrram, d_next => d_next, en_d => en_d
+        );
+end Behavioral;

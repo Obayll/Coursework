@@ -1,0 +1,144 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity storage is
+    Port (
+        NT1, NT2, NT3, NT4, NT5, NT6, NT7, NT8, NT9 : in STD_LOGIC;
+        RT1, RT2, RT3, RT4, RT5, RT6, RT7, RT8, RT9 : in STD_LOGIC;
+        RST : in STD_LOGIC;
+        CLK : in STD_LOGIC;
+        INIT_LIGHTS, TOGGLE_ALL, TOGGLE_OFF : in STD_LOGIC;
+        Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9 : out STD_LOGIC
+    );
+end storage;
+
+architecture Behavioral of storage is
+signal FFIn_1, FFIn_2, FFIn_3, FFIn_4, FFIn_5, FFIn_6, FFIn_7, FFIn_8, FFIn_9 : STD_LOGIC;
+signal FFOut_1, FFOut_2, FFOut_3, FFOut_4, FFOut_5, FFOut_6, FFOut_7, FFOut_8, FFOut_9 : STD_LOGIC;
+begin
+Toggle_Check : process(CLK, TOGGLE_ALL, TOGGLE_OFF)
+begin
+    if rising_edge(CLK) then
+        if TOGGLE_OFF = '1' then
+            FFIn_1 <= '0';
+            FFIn_2 <= '0';
+            FFIn_3 <= '0';
+            FFIn_4 <= '0';
+            FFIn_5 <= '0';
+            FFIn_6 <= '0';
+            FFIn_7 <= '0';
+            FFIn_8 <= '0';
+            FFIn_9 <= '0';
+        else
+            FFIn_1 <= NT1 or (RT1 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_2 <= NT2 or (RT2 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_3 <= NT3 or (RT3 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_4 <= NT4 or (RT4 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_5 <= NT5 or (RT5 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_6 <= NT6 or (RT6 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_7 <= NT7 or (RT7 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_8 <= NT8 or (RT8 and INIT_LIGHTS) or TOGGLE_ALL;
+            FFIn_9 <= NT9 or (RT9 and INIT_LIGHTS) or TOGGLE_ALL;
+        end if;
+    end if;
+end process;
+FF_1 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_1 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_1 = '1' then
+            FFOut_1 <= not(FFOut_1);
+        end if;
+    end if;
+end process;
+FF_2 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_2 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_2 = '1' then
+            FFOut_2 <= not(FFOut_2);
+        end if;
+    end if;
+end process;
+FF_3 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_3 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_3 = '1' then
+            FFOut_3 <= not(FFOut_3);
+        end if;
+    end if;
+end process;
+FF_4 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_4 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_4 = '1' then
+            FFOut_4 <= not(FFOut_4);
+        end if;
+    end if;
+end process;
+FF_5 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_5 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_5 = '1' then
+            FFOut_5 <= not(FFOut_5);
+        end if;
+    end if;
+end process;
+FF_6 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_6 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_6 = '1' then
+            FFOut_6 <= not(FFOut_6);
+        end if;
+    end if;
+end process;
+FF_7 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_7 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_7 = '1' then
+            FFOut_7 <= not(FFOut_7);
+        end if;
+    end if;
+end process;
+FF_8 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_8 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_8 = '1' then
+            FFOut_8 <= not(FFOut_8);
+        end if;
+    end if;
+end process;
+FF_9 : process(CLK, RST)
+begin
+    if RST = '1' then
+        FFOut_9 <= '0';
+    elsif rising_edge(CLK) then
+        if FFIn_9 = '1' then
+            FFOut_9 <= not(FFOut_9);
+        end if;
+    end if;
+end process;
+Q1 <= FFOut_1;
+Q2 <= FFOut_2;
+Q3 <= FFOut_3;
+Q4 <= FFOut_4;
+Q5 <= FFOut_5;
+Q6 <= FFOut_6;
+Q7 <= FFOut_7;
+Q8 <= FFOut_8;
+Q9 <= FFOut_9;
+end Behavioral;

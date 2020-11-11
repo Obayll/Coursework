@@ -1,0 +1,75 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity controller is
+    Port (
+        RSTp, STARTp, WINp : in STD_LOGIC;
+        CLK : in STD_LOGIC;
+        EN_LFSR, INIT_LIGHTS, START_TIMER, EN_TIMER, TOGGLE_ALL, TOGGLE_OFF : out STD_LOGIC;
+        WIN, END_TIMER : in STD_LOGIC
+    );
+end controller;
+
+architecture Behavioral of controller is
+type state is (S_WAIT, S_PLAY, S_WIN);
+signal state_reg, state_next : state;
+signal toggle : STD_LOGIC := '0';
+begin
+Moore : process(CLK, RSTp)
+begin
+    if RSTp = '1' then
+        state_reg <= S_WAIT;
+    elsif rising_edge(CLK) then
+        state_reg <= state_next;
+    end if;
+end process;
+Next_State : process(state_reg, STARTp, WINp, WIN, END_TIMER)
+begin
+    state_next <= state_reg;
+    case state_reg is
+        when S_WAIT =>
+            START_TIMER <= '1';
+            EN_TIMER <= '0';
+            TOGGLE_ALL <= '0';
+            TOGGLE_OFF <= '0';
+            if STARTp = '1' then
+                state_next <= S_PLAY;
+                EN_LFSR <= '0';
+                INIT_LIGHTS <= '1';
+            else
+                state_next <= S_WAIT;
+                EN_LFSR <= '1';
+                INIT_LIGHTS <= '0';
+            end if;
+        when S_PLAY =>
+            INIT_LIGHTS <= '0';
+            if WINp = '1' or WIN = '1' then
+                state_next <= S_WIN;
+                EN_TIMER <= '1';
+            else
+                state_next <= S_PLAY;
+            end if;
+        when S_WIN =>
+            EN_TIMER <= '1';
+            START_TIMER <= '0';
+            if END_TIMER = '1' then
+                if toggle = '0' then
+                    TOGGLE_ALL <= '1';
+                    TOGGLE_OFF <= '0';
+                    toggle <= '1';
+                    --INIT_LIGHTS <= '1';
+                else  
+                    TOGGLE_ALL <= '0';
+                    TOGGLE_OFF <= '1';
+                    toggle <= '0';
+                    --INIT_LIGHTS <= '1';
+                end if;
+                --toggle <= not(toggle);
+                START_TIMER <= '1';
+                state_next <= S_WIN;
+            else
+                state_next <= S_WIN;
+            end if;
+    end case;
+end process;
+end Behavioral;

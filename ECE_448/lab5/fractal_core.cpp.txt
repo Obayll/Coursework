@@ -1,0 +1,45 @@
+/*
+ * fractal_core.cpp
+ *
+ *  Created on: May 10, 2020
+ *      Author: Jordan
+ */
+
+#include "fractal_core.h"
+
+FractalCore::FractalCore(uint32_t core_base_addr) {
+   base_addr = core_base_addr;
+   ctrl = 0;
+   N = 0;
+}
+
+FractalCore::~FractalCore() {}
+
+void FractalCore::set_iteration(uint32_t num) {
+	ctrl = num;
+	io_write(base_addr, N_REG, ctrl);
+}
+
+void FractalCore::get_fractal(uint32_t zx, uint32_t zy) {
+	ctrl = zx;
+	io_write(base_addr, ZX0, ctrl);
+	ctrl = zy;
+	io_write(base_addr, ZY0, ctrl);
+
+	ctrl = s_FIELD;
+	io_write(base_addr, START_REG, ctrl);
+	io_write(base_addr, START_REG, ctrl);
+	io_write(base_addr, START_REG, 0);
+	io_write(base_addr, START_REG, 0);
+
+	uint32_t i;
+	while (i != 1) {
+		i = io_read(base_addr, STATUS_REG);
+	}
+}
+
+void FractalCore::read_num(uint32_t array[]) {
+	for (int i = 0; i < 16; i++) {
+		array[i] = io_read(base_addr, i);
+	}
+}

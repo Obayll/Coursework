@@ -1,0 +1,11 @@
+[x1,tt1] = mycos(440,4000,1);
+[x2,tt2] = mycos(480,4000,1);
+xx = x1 + x2;
+soundsc(xx,4000);
+subplot(2,1,1);
+plot(xx(1:1000));
+title('Jordan Ditzler - Plot1');
+subplot(2,1,2);
+tt = linspace(0,0.25,1000);
+plot(tt,xx(1:1000));
+title('Jordan Ditzler - Plot2');

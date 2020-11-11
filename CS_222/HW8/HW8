@@ -1,0 +1,128 @@
+Script started on Wed Apr 26 23:52:22 2017
+mason% uname -a
+SunOS mason 5.10 Generic_150400-40 sun4u sparc SUNW,Sun-Fire-V890
+mason% cat decoding.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include "decoding.h"
+
+void decoding(char otxt[], char ibin[]) {
+        FILE *input, *output;
+        unsigned int c, MASK = 0xFF;
+        unsigned char a;
+
+        input = fopen(ibin, "rb");
+    output = fopen(otxt, "w");
+
+    while (fread(&c, sizeof(int), 1, input) == 1) {
+                c = (0xFFFFFFFF & c >> 3) | c << 29;
+        a = (c >> 24) & MASK;
+        if (isascii(a)) fputc(a, output);
+                
+        a = (c >> 16) & MASK;
+        if (isascii(a)) fputc(a, output);
+
+        a = (c >> 8) & MASK;
+        if (isascii(a)) fputc(a, output);
+
+        a = c & MASK;
+        if (isascii(a)) fputc(a, output);
+    }
+
+        fclose(output);
+    fclose(input);
+}
+mason% cat decoding.h
+// input binary file: ibin[]
+// output text bile: otxt[]
+// k = -3: cyclicly shift the integer to the right 3 bits. 
+
+// 1) read an integer from the input binary file
+// 2) cyclic shift the integer 3 bits to the right;
+// 2) unpack the 4 characters from the shifted integer;
+// 4) write the characters into the output textfile otxt;
+
+void decoding(char otxt[], char ibin[]); 
+mason% cat encoding.c
+#include <stdio.h>
+#include <stdlib.h>
+#include "encoding.h"
+
+void encoding(char itxt[], char obin[]) {
+        FILE *input, *output;
+        unsigned int c;
+
+        input = fopen(itxt, "r");
+        output = fopen(obin, "wb");
+
+        while ((c = fgetc(input)) != EOF) {
+                c <<= 8;
+                c |= fgetc(input);
+                c <<= 8;
+                c |= fgetc(input);
+                c <<= 8;
+                c |= fgetc(input);
+                
+                c = c << 3 | (0xFFFFFFFF & c >> 29);
+                
+                fwrite(&c, sizeof(int), 1, output);
+        }
+
+        fclose(input);
+        fclose(output);
+}
+mason% cat encoding.h
+// k equal 3: shift 3 bits to the left cyclicly. 
+
+// input text file name: itxt[] 
+// output binary file name: obin[] 
+
+// 1) read 4 characters from input text file 
+//      (if not enough characters, use EOF or whatever)
+// 2) pack the 4 characters into an integer; 
+// 3) cyclic shift the integer 3 bits to the left; 
+// 4) write the shifted integer into obin (binary); 
+
+
+void encoding(char itxt[], char obin[]); 
+mason% cat main.c
+#include <stdio.h>
+#include <stdlib.h>
+#include "encoding.h"
+#include "decoding.h"
+
+int main() {
+        char itxt[] = "HW8.txt", bin[] = "HW8.bin", otxt[] = "HW8c.txt"; 
+
+        system("cat HW8.txt");
+        encoding(itxt, bin);
+        decoding(otxt, bin);
+        printf("\n");
+        system("cat HW8c.txt");
+        printf("\n");
+
+        return(0); 
+}
+mason% cat makefile
+bitwise: main.o encoding.o decoding.o
+        gcc -o bitwise main.o encoding.o decoding.o 
+
+main.o: encoding.h decoding.h
+        gcc -c  main.c
+
+encoding.o: encoding.h 
+        gcc -c encoding.c
+
+decoding.o: decoding.h 
+        gcc -c decoding.c
+
+mason% make
+gcc -c encoding.c
+gcc -c decoding.c
+gcc -o bitwise main.o encoding.o decoding.o 
+mason% bitwise
+ABCDEFGH
+ABCDEFGH
+mason% ^D
+script done on Wed Apr 26 23:53:27 2017

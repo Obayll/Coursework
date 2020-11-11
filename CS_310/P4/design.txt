@@ -1,0 +1,60 @@
+Description of underlying data structure:
+SymbolTable: Uses a hash table because we need O(1) Big-O and easy access to a table of a key and value pair. Since the table is indexed, all methods made are O(1).
+Sequence: Uses a treeset because of the O(LogN) Big-O as well as treeset coming with built in sort algorithms and methods that best compliment our required methods. Since treeset uses a tree format, the usual Big-O is O(LogN) where LogN is the tree height, except when iterating through, which is O(N).
+MyPriorityQueue: Uses a max-heap stored in an array because of its sorted nature and its O(LogN) Big-O. Since heaps are technically binary trees, it adding and removing are O(LogN) Big-O since the tree height is LogN and when adding and removing you have to re-sort the tree, moving the value up and down branches.
+
+countNoSmallerThan() Description: Uses .ceiling and .higher with an efficiency of O(LogN) to traverse only the needed nodes of the tree resulting in an average case of log(n) due to the unnecessary branches being skipped
+
+			  90
+			/     \
+		  50        150
+		 / \       /   \
+	   20   75	  95     175
+	  /\    / \   /\      /\
+	 5 25  66 80 92 111 166 200
+
+	 Worst Case				Best Case
+	 v = 5					v = 200
+	 count = 0				count = 0
+
+	 value = 20				value = null
+	 count = 1				count = 1
+							done
+	 value = 25
+	 count = 2
+
+	 value = 50
+	 count = 3
+
+	 value = 66
+	 count = 4
+	 
+	 value = 75
+	 count = 5
+	 
+	 value = 80
+	 count = 6
+	 
+	 value = 90
+	 count = 7
+	 
+	 value = 92
+	 count = 8
+	 
+	 value = 95
+	 count = 9
+	 
+	 value = 111
+	 count = 10
+	 
+	 value = 150
+	 count = 11
+	 
+	 value = 166
+	 count = 12
+	 
+	 value = 175
+	 count = 13
+	 
+	 value = 200
+	 count = 14

@@ -1,0 +1,115 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity datapath is
+    Port (
+        SW0 : in STD_LOGIC;
+        SW1p, SW2p, SW3p, SW4p, SW5p, SW6p, SW7p, SW8p, SW9p : in STD_LOGIC;
+        CLK : in STD_LOGIC;
+        RSTp, EN_LFSR, INIT_LIGHTS, START_TIMER, EN_TIMER, TOGGLE_ALL, TOGGLE_OFF : in STD_LOGIC;
+        WIN, END_TIMER : out STD_LOGIC;
+        SSEG1, SSEG2, SSEG3 : out STD_LOGIC_VECTOR(2 downto 0)
+    );
+end datapath;
+
+architecture Behavioral of datapath is
+signal NT1, NT2, NT3, NT4, NT5, NT6, NT7, NT8, NT9 : STD_LOGIC;
+signal RT1, RT2, RT3, RT4, RT5, RT6, RT7, RT8, RT9 : STD_LOGIC;
+signal Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9 : STD_LOGIC;
+begin
+WIN <= not(Q1 or Q2 or Q3 or Q4 or Q5 or Q6 or Q7 or Q8 or Q9);
+NEIGHBORS : entity work.neighbors(Behavioral)
+    Port map (
+        L1 => SW1p,
+        L2 => SW2p,
+        L3 => SW3p,
+        L4 => SW4p,
+        L5 => SW5p,
+        L6 => SW6p,
+        L7 => SW7p,
+        L8 => SW8p,
+        L9 => SW9p,
+        SW0 => SW0,
+        NT1 => NT1,
+        NT2 => NT2,
+        NT3 => NT3,
+        NT4 => NT4,
+        NT5 => NT5,
+        NT6 => NT6,
+        NT7 => NT7,
+        NT8 => NT8,
+        NT9 => NT9
+    );
+LFSR : entity work.lfsr(Behavioral)
+    Port map (
+        CLK => CLK,
+        INIT => RSTp,
+        EN => EN_LFSR,
+        RT1 => RT1,
+        RT2 => RT2,
+        RT3 => RT3,
+        RT4 => RT4,
+        RT5 => RT5,
+        RT6 => RT6,
+        RT7 => RT7,
+        RT8 => RT8,
+        RT9 => RT9
+    );
+STORAGE : entity work.storage(Behavioral)
+    Port map (
+        RST => RSTp,
+        CLK => CLK,
+        INIT_LIGHTS => INIT_LIGHTS,
+        TOGGLE_ALL => TOGGLE_ALL,
+        TOGGLE_OFF => TOGGLE_OFF,
+        NT1 => NT1,
+        NT2 => NT2,
+        NT3 => NT3,
+        NT4 => NT4,
+        NT5 => NT5,
+        NT6 => NT6,
+        NT7 => NT7,
+        NT8 => NT8,
+        NT9 => NT9,
+        RT1 => RT1,
+        RT2 => RT2,
+        RT3 => RT3,
+        RT4 => RT4,
+        RT5 => RT5,
+        RT6 => RT6,
+        RT7 => RT7,
+        RT8 => RT8,
+        RT9 => RT9,
+        Q1 => Q1,
+        Q2 => Q2,
+        Q3 => Q3,
+        Q4 => Q4,
+        Q5 => Q5,
+        Q6 => Q6,
+        Q7 => Q7,
+        Q8 => Q8,
+        Q9 => Q9
+    );
+SSD_CONVERTER : entity work.ssd_converter(Behavioral)
+    Port map (
+        SEG1 => Q1,
+        SEG2 => Q2,
+        SEG3 => Q3,
+        SEG4 => Q4,
+        SEG5 => Q5,
+        SEG6 => Q6,
+        SEG7 => Q7,
+        SEG8 => Q8,
+        SEG9 => Q9,
+        SSEG1 => SSEG1,
+        SSEG2 => SSEG2,
+        SSEG3 => SSEG3
+    );
+TIMER : entity work.timer(Behavioral)
+    Port map (
+        CLK => CLK,
+        LD => START_TIMER,
+        EN => EN_TIMER,
+        Q => END_TIMER
+    );
+end Behavioral;

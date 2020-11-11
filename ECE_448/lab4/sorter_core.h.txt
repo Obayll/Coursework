@@ -1,0 +1,43 @@
+#ifndef _SORTER_H_INCLUDED
+#define _SORTER_H_INCLUDED
+
+#include "chu_io_rw.h"
+#include "chu_io_map.h"				/* to obtain system clock rate  */
+
+class SorterCore {
+public:
+	/* register map */
+	enum {
+		MEMW_ri_REG = 0,
+		MEMR_ri_REG = 1,
+		N_REG       = 2,
+		CTRL_REG    = 3,
+		STATUS_REG  = 4
+	};
+
+	/* masks */
+	enum {
+		s_FIELD    = 0x00000001, 	// bit 0 of ctrl_reg;
+		init_FIELD = 0x00000002,	// bit 1 of ctrl_reg;
+		rw_FIELD   = 0x00000004, 	// bit 2 of ctrl_reg;
+		Done_FIELD = 0x00000001, 	// bit 0 of status_reg
+	};
+
+	/* methods */
+	SorterCore(uint32_t core_base_addr);	// constructor
+	~SorterCore();							// destructor, not used
+
+	void set_N(uint16_t N);
+	void initialize_core_mem(uint16_t *proc_mem);	// initialize the internal memory of the core
+	void readout_core_mem(uint16_t *proc_mem); 		// read out the internal memory of the core
+
+	void start_sorting(); 							// start sorting by setting s to 1
+	uint32_t done_sorting(); 						// status word, including the Done flag
+
+private:
+	uint32_t base_addr; // current value of the base address
+	uint16_t N; 		// current value of N
+	uint32_t ctrl; 		// current state of ctrl_reg
+};
+
+#endif								/** _SORTER_H_INCLUDED */

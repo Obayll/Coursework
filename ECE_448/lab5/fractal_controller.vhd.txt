@@ -1,0 +1,107 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
+
+entity fractal_controller is 
+    port (
+        clk, reset                         : in std_logic;
+        start, check, zi, zix, ziy         : in std_logic;
+        s0xy, s0x, s0y, enx, eny, enz, eni : out std_logic;
+        enix, eniy, enz0x, enz0y, ensr     : out std_logic;
+        sia, lda, ena, ldi, ldix, ldiy     : out std_logic;
+        wrram, d_next, en_d                : out std_logic
+    );
+end fractal_controller;
+
+architecture Behavioral of fractal_controller is
+    type state IS (S0, S1, S2, S3, S4);
+    signal state_reg, state_next : state;
+begin
+    state_machine : process(clk, reset)
+    begin
+        if (reset = '1') then
+            state_reg <= S0;
+        elsif (clk'event and clk = '1') then
+            state_reg <= state_next;
+        end if;
+    end process;
+     
+    next_state : process(state_reg, start, check, zi, zix, ziy)
+    begin
+        state_next <= state_reg;
+        
+        s0xy <= '0'; s0x <= '0'; s0y <= '0'; enx <= '0'; eny <= '0'; enz <= '0'; eni <= '0';
+        enix <= '0'; eniy <= '0'; enz0x <= '0'; enz0y <= '0'; ensr <= '0';
+        sia <= '0'; lda <= '0'; ena <= '0'; ldi <= '0'; ldix <= '0'; ldiy <= '0';
+        wrram <= '0'; d_next <= '0'; en_d <= '0';
+        
+        case state_reg is
+            when S0 =>
+                ensr <= '0';
+                d_next <= '0';
+                en_d  <= '0';
+                sia <= '0';
+                lda <= '1';
+                if (start = '1') then
+                    state_next <= S1;
+                else
+                    state_next <= S0;
+                end if;
+            when S1 =>
+                ensr <= '0';
+                wrram <= '0';
+                ena <= '0';
+                enz0y <= '0';
+                eniy <= '0';
+                s0x <= '1';
+                enz0x <= '1';
+                ldix <= '1';
+                state_next <= S2;
+            when S2 =>
+                ensr <= '0';
+                enix <= '0';
+                enz0x <= '0';
+                ldix <= '0';
+                s0xy <= '1';
+                enz <= '1';
+                ldi <= '1';
+                state_next <= S3;
+            when S3 =>
+                enz <= '0';
+                ldi <= '0';
+                state_next <= S4;
+            when S4 =>
+                if (not(check) and not(zi)) then
+                    s0xy <= '0';
+                    enz <= '1';
+                    ldi <= '1';
+                    state_next <= S3;
+                else
+                    ensr <= '1';
+                    if (zix = '1') then
+                        if (ziy = '1') then
+                            d_next <= '1';
+                            en_d <= '1';
+                            state_next <= S0;
+                        else
+                            sia <= '1';
+                            wrram <= '1';
+                            ena <= '1';
+                            s0y <= '0';
+                            enz0y <= '1';
+                            eniy <= '1';
+                            state_next <= S1;
+                        end if;
+                    else
+                        s0x <= '0';
+                        enz0x <= '1';
+                        enix <= '1';
+                        state_next <= S2;
+                    end if;
+                end if;
+        end case;
+    end process;
+end Behavioral;

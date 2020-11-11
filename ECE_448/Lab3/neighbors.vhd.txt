@@ -1,0 +1,89 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity neighbors is
+    Port (
+        L1, L2, L3, L4, L5, L6, L7, L8, L9 : in STD_LOGIC;
+        SW0 : in STD_LOGIC;
+        NT1, NT2, NT3, NT4, NT5, NT6, NT7, NT8, NT9 : out STD_LOGIC
+    );
+end neighbors;
+
+architecture Behavioral of neighbors is
+signal EncZ : STD_LOGIC;
+signal EncOut : STD_LOGIC_VECTOR(3 downto 0);
+signal RomOut_1, RomOut_2, RomOut_3, RomOut_4 : STD_LOGIC_VECTOR(3 downto 0);
+signal DecOut_1, DecOut_2, DecOut_3, DecOut_4 : STD_LOGIC_VECTOR(8 downto 0);
+begin
+ENCODER : entity work.encoder9to4(Behavioral)
+    Port map (
+        Input(0) => L1,
+        Input(1) => L2,
+        Input(2) => L3,
+        Input(3) => L4,
+        Input(4) => L5,
+        Input(5) => L6,
+        Input(6) => L7,
+        Input(7) => L8,
+        Input(8) => L9,
+        Z => EncZ,
+        Output => EncOut
+    );
+ROM_UP : entity work.rom(Behavioral)
+    Port map (
+        Addr => EncOut,
+        Mode => "00",
+        Dout => RomOut_1
+    );
+ROM_DOWN : entity work.rom(Behavioral)
+    Port map (
+        Addr => EncOut,
+        Mode => "01",
+        Dout => RomOut_2
+    );
+ROM_LEFT : entity work.rom(Behavioral)
+    Port map (
+        Addr => EncOut,
+        Mode => "10",
+        Dout => RomOut_3
+    );
+ROM_RIGHT : entity work.rom(Behavioral)
+    Port map (
+        Addr => EncOut,
+        Mode => "11",
+        Dout => RomOut_4
+    );
+DECODER_UP : entity work.decoder4to9(Behavioral)
+    Port map (
+        Input => RomOut_1,
+        En => EncZ,
+        Output => DecOut_1
+    );
+DECODER_DOWN : entity work.decoder4to9(Behavioral)
+    Port map (
+        Input => RomOut_2,
+        En => EncZ,
+        Output => DecOut_2
+    );
+ DECODER_LEFT : entity work.decoder4to9(Behavioral)
+    Port map (
+        Input => RomOut_3,
+        En => EncZ,
+        Output => DecOut_3
+    );
+ DECODER_RIGHT : entity work.decoder4to9(Behavioral)
+    Port map (
+        Input => RomOut_4,
+        En => EncZ,
+        Output => DecOut_4
+    );
+NT1 <= (L1 and SW0) or DecOut_1(0) or DecOut_2(0) or DecOut_3(0) or DecOut_4(0);
+NT2 <= (L2 and SW0) or DecOut_1(1) or DecOut_2(1) or DecOut_3(1) or DecOut_4(1);
+NT3 <= (L3 and SW0) or DecOut_1(2) or DecOut_2(2) or DecOut_3(2) or DecOut_4(2);
+NT4 <= (L4 and SW0) or DecOut_1(3) or DecOut_2(3) or DecOut_3(3) or DecOut_4(3);
+NT5 <= (L5 and SW0) or DecOut_1(4) or DecOut_2(4) or DecOut_3(4) or DecOut_4(4);
+NT6 <= (L6 and SW0) or DecOut_1(5) or DecOut_2(5) or DecOut_3(5) or DecOut_4(5);
+NT7 <= (L7 and SW0) or DecOut_1(6) or DecOut_2(6) or DecOut_3(6) or DecOut_4(6);
+NT8 <= (L8 and SW0) or DecOut_1(7) or DecOut_2(7) or DecOut_3(7) or DecOut_4(7);
+NT9 <= (L9 and SW0) or DecOut_1(8) or DecOut_2(8) or DecOut_3(8) or DecOut_4(8);
+end Behavioral;

@@ -1,0 +1,4 @@
+[ss,fs] = audioread('Lab3Audio.wav');
+zz = zeros(1000,1);
+s1 = [zz;;
+s2 = cat(1,ss,zz);

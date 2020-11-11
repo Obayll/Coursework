@@ -1,0 +1,76 @@
+CS 222 -- Homework Assignment 7
+Debugging Code with GDB
+
+Answer Sheet
+Name: Jordan Ditzler G00967092
+
+CS 222 Section: 002
+
+Complete this answer sheet using the instructions given in the lab. Turn in a hard copy of your completed sheet to your TA by the beginning of your lab next week.
+
+Compiling
+1) Write the size (in bytes) of the executable 7972 bytes (Note: The size in bytes is the number immediately before the date in the output from the ls -l command)
+
+2) Now, recompile using the -g command line option and write the size in bytes of the new executable: 10236 bytes
+
+Starting GDB
+3)  Copy the first line that is printed when you run gdb: GNU gdb (GDB) 7.4.1
+
+4) Now, copy the portion in the quotes on the line that states "This GDB was configured as." For instance, in the example above, you would copy i686-linux-gnu: sparc-sun-solaris2.10
+
+Getting Help
+5) Write the number of topics/classes: 12
+
+6) Now, type "help break" to get specific information:
+Write the first line printed after executing the command here: Set breakpoint at specified line or function.
+
+Running a Program
+7) Try it now. What happened?  It started, ran, and exited with no output.
+
+8) Try the run command again, this time adding the command line argument "1." What happened this time? "The sum of integers from 0 to 10 is: 1013" was printed out. (w/o "")
+
+Setting Breakpoints
+9) At what line number does execution pause? Line 55
+
+A Brief Digression
+10) Write what you see as a result: $1 = 1
+
+Stepping Through Code
+11) On what line does the program execution pause? 58
+
+12) Use the print statement mentioned above to print the current value of sum. What is its current value? 0
+
+13) Now, use the step command step over the current line. At what line does the execution pause? 61
+
+14) Print the value of sum again. What is its value now? 0
+
+15) Continue stepping through the program until the following line is reached:
+sum += sum + i;
+16) Print the value of sum: 0
+
+Displaying Variables
+17) What is the value of the variable 'i' at this point? 6
+
+18) Once you see what the bug is, describe it below:
+The line "sum += sum + i;" is adding the original sum onto itself, instead of getting the 10th triangular number. Also, the "i < SIZE" fails to include the end number, and so should include <= instead.
+
+Finding the Seg Fault
+19) Notice that gdb tells you exactly the line of code where the seg fault occurs. What line is it? 80
+
+20) Write the values of i and c: i = 37, c = 65
+
+21) Now print the value of dl2 using the following command:
+(gdb) print dl2
+What is its value? 0x21258
+
+22) What are the values of i and c? i = 36, c = 66
+
+23) Now, let's look at the actual line of code causing the seg fault. Using gdb, print the value of dl1 using the following command:
+(gdb) print dl1
+What is its value? 0x0
+
+24) Note that dl1 is a pointer. Now, try to dereference dl1 and print its value using the following command:
+(gdb) print *dl1
+Write the message given: Cannot access memory at address 0x0
+
+

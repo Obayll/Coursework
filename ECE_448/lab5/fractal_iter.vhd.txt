@@ -1,0 +1,76 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
+
+entity fractal_iter is
+    generic (
+        cx : sfixed := to_sfixed(-0.5, 3, -28);
+        cy : sfixed := to_sfixed(0.5, 3, -28)
+    );
+    port (
+        clk   : in std_logic;
+        init  : in std_logic;
+        enr   : in std_logic;
+        z0x   : in sfixed(3 downto -28);
+        z0y   : in sfixed(3 downto -28);
+        zi    : in std_logic;
+        --zx_o  : out sfixed(3 downto -28);
+        --zy_o  : out sfixed(3 downto -28);
+        check : out std_logic
+    );
+end fractal_iter;
+architecture Behavioral of fractal_iter is
+    signal zx, zy            : sfixed(3 downto -28) := (others=>'0');
+    signal mux_zx, mux_zy    : sfixed(3 downto -28) := (others=>'0');
+    signal zx2, zy2          : sfixed(7 downto -56) := (others=>'0');
+    signal zxy               : sfixed(11 downto -56) := (others=>'0');
+    signal zxtemp            : sfixed(10 downto -56) := (others=>'0');
+    signal zytemp            : sfixed(13 downto -56) := (others=>'0');
+begin
+
+    before_reg : process(clk)
+    begin
+        if rising_edge(clk) then
+            zx2 <= zx * zx;
+            zy2 <= zy * zy;
+            zxy <= 2 * zx * zy;
+        end if;
+    end process;
+
+    temp_reg : process(clk)
+    begin
+        if rising_edge(clk) then
+            zxtemp <= zx2 - zy2 + zx + cx;
+            zytemp <= zxy + zy + cy;
+        end if;
+    end process;
+
+    mux_zx <= resize(zxtemp, 3, -28) when init = '0' else z0x;
+    mux_zy <= resize(zytemp, 3, -28) when init = '0' else z0y;
+
+    basic_reg : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (enr = '1') then
+                zx <= mux_zx;
+                zy <= mux_zy;
+                --zx_o <= mux_zx;
+                --zy_o <= mux_zy;
+            end if;
+        end if;
+    end process;
+
+    check_reg : process(clk)
+    begin
+        if rising_edge(clk) then
+             if (zx2 + zy2 >= 4 or zi = '1') then
+                check <= '1';
+            else
+                check <= '0';
+            end if;
+        end if;
+    end process;
+end Behavioral;

@@ -1,0 +1,16 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity ssd_converter is
+    Port (
+        SEG1, SEG2, SEG3, SEG4, SEG5, SEG6, SEG7, SEG8, SEG9 : in STD_LOGIC;
+        SSEG1, SSEG2, SSEG3 : out STD_LOGIC_VECTOR(2 downto 0)
+    );
+end ssd_converter;
+
+architecture Behavioral of ssd_converter is
+begin
+SSEG3 <= SEG3 & SEG2 & SEG1;
+SSEG2 <= SEG6 & SEG5 & SEG4;
+SSEG1 <= SEG9 & SEG8 & SEG7;
+end Behavioral;

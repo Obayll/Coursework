@@ -1,0 +1,47 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity lfsr is
+    Port (
+        CLK : in STD_LOGIC;
+        EN : in STD_LOGIC;
+        INIT : in STD_LOGIC;
+        RT1, RT2, RT3, RT4, RT5, RT6, RT7, RT8, RT9 : out STD_LOGIC
+    );
+end lfsr;
+
+architecture Behavioral of lfsr is
+signal CurrState, NextState : std_logic_vector (8 DOWNTO 0);
+signal Feedback : std_logic;
+constant INIT_VAL : STD_LOGIC_VECTOR(8 downto 0) := "010101010";
+begin
+Feedback <= CurrState(3) xor CurrState(8);
+NextState <= Feedback & CurrState(8 DOWNTO 1);
+LFSR : process(CLK, INIT)
+begin
+    if INIT = '1' then
+        CurrState(0) <= INIT_VAL(0);
+        CurrState(1) <= INIT_VAL(1);
+        CurrState(2) <= INIT_VAL(2);
+        CurrState(3) <= INIT_VAL(3);
+        CurrState(4) <= INIT_VAL(4);
+        CurrState(5) <= INIT_VAL(5);
+        CurrState(6) <= INIT_VAL(6);
+        CurrState(7) <= INIT_VAL(7);
+        CurrState(8) <= INIT_VAL(8);
+    elsif rising_edge(CLK) then
+        if EN = '1' then
+            CurrState <= NextState;
+        end if;
+    end if;
+end process;
+RT1 <= CurrState(0);
+RT2 <= CurrState(1);
+RT3 <= CurrState(2);
+RT4 <= CurrState(3);
+RT5 <= CurrState(4);
+RT6 <= CurrState(5);
+RT7 <= CurrState(6);
+RT8 <= CurrState(7);
+RT9 <= CurrState(8);
+end Behavioral;

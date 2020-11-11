@@ -1,0 +1,242 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity input_interface is
+    Generic (
+        K : integer;
+        DD : integer
+    );
+    Port (
+        SW1, SW2, SW3, SW4, SW5, SW6, SW7, SW8, SW9 : in STD_LOGIC;
+        BTNU, BTNC, BTND : in STD_LOGIC;
+        CLK : in STD_LOGIC;
+        SW1p, SW2p, SW3p, SW4p, SW5p, SW6p, SW7p, SW8p, SW9p : out STD_LOGIC;
+        RSTp, STARTp, WINp : out STD_LOGIC
+    );
+end input_interface;
+
+architecture Behavioral of input_interface is
+signal SW1_Sig, SW2_Sig, SW3_Sig, SW4_Sig, SW5_Sig, SW6_Sig, SW7_Sig, SW8_Sig, SW9_Sig : STD_LOGIC;
+signal BTNU_Sig, BTNC_Sig, BTND_Sig : STD_LOGIC;
+signal RST : STD_LOGIC := '0';
+begin
+-- RESET
+BTNU_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => BTNU,
+        RST => RST,
+        CLK => CLK,
+        Output => BTNU_Sig
+    );
+BTNU_BTN : entity work.red(dataflow)
+    Port map (
+        Input => BTNU_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => RSTp
+    );
+-- START
+BTNC_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => BTNC,
+        RST => RST,
+        CLK => CLK,
+        Output => BTNC_Sig
+    );
+BTNC_BTN : entity work.red(dataflow)
+    Port map (
+        Input => BTNC_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => STARTp
+    );
+-- WIN
+BTND_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => BTND,
+        RST => RST,
+        CLK => CLK,
+        Output => BTND_Sig
+    );
+BTND_BTN : entity work.red(dataflow)
+    Port map (
+        Input => BTND_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => WINp
+    );
+SW1_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW1,
+        RST => RST,
+        CLK => CLK,
+        Output => SW1_Sig
+    );
+SW1_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW1_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW1p
+    );
+SW2_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW2,
+        RST => RST,
+        CLK => CLK,
+        Output => SW2_Sig
+    );
+SW2_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW2_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW2p
+    );
+SW3_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW3,
+        RST => RST,
+        CLK => CLK,
+        Output => SW3_Sig
+    );
+SW3_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW3_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW3p
+    );
+SW4_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW4,
+        RST => RST,
+        CLK => CLK,
+        Output => SW4_Sig
+    );
+SW4_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW4_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW4p
+    );
+SW5_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW5,
+        RST => RST,
+        CLK => CLK,
+        Output => SW5_Sig
+    );
+SW5_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW5_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW5p
+    );
+SW6_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW6,
+        RST => RST,
+        CLK => CLK,
+        Output => SW6_Sig
+    );
+SW6_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW6_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW6p
+    );
+SW7_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW7,
+        RST => RST,
+        CLK => CLK,
+        Output => SW7_Sig
+    );
+SW7_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW7_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW7p
+    );
+SW8_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW8,
+        RST => RST,
+        CLK => CLK,
+        Output => SW8_Sig
+    );
+SW8_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW8_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW8p
+    );
+SW9_DEB : entity work.debouncer(dataflow)
+    Generic map(
+        K => K,
+        DD => DD
+    )
+    Port map (
+        Input => SW9,
+        RST => RST,
+        CLK => CLK,
+        Output => SW9_Sig
+    );
+SW9_BTN : entity work.red(dataflow)
+    Port map (
+        Input => SW9_Sig,
+        RST => RST,
+        CLK => CLK,
+        Output => SW9p
+    );
+end Behavioral;

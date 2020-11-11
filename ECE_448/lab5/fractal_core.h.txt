@@ -1,0 +1,43 @@
+/*
+ * fractal_core.h
+ *
+ *  Created on: May 10, 2020
+ *      Author: Jordan
+ */
+
+#ifndef SRC_FRACTAL_CORE_H_
+#define SRC_FRACTAL_CORE_H_
+
+#include "chu_io_rw.h"
+#include "chu_io_map.h"
+
+class FractalCore {
+public:
+	enum {
+		START_REG = 0,
+		N_REG = 1,
+		STATUS_REG  = 2,
+		ZX0 = 3,
+		ZY0 = 4
+	};
+
+	enum {
+		s_FIELD    = 0x00000001
+	};
+
+	FractalCore(uint32_t core_base_addr);
+	~FractalCore();
+
+	void set_iteration(uint32_t num);
+
+	void get_fractal(uint32_t zx, uint32_t zy);
+
+	void read_num(uint32_t array[]);
+
+private:
+	uint32_t base_addr;
+	uint32_t N;
+	uint32_t ctrl;
+};
+
+#endif /* SRC_FRACTAL_CORE_H_ */

@@ -1,0 +1,109 @@
+library ieee;
+use ieee.std_logic_1164.ALL;
+
+library ieee_proposed;
+use ieee_proposed.fixed_pkg.all;
+
+entity fractal_iter_tb is
+end fractal_iter_tb;
+
+architecture Behavioral of fractal_iter_tb is
+    signal clk   : std_logic := '0';
+    signal init  : std_logic := '0';
+    signal enr   : std_logic := '0';
+    signal eni   : std_logic := '0';
+    signal ldi   : std_logic := '0';
+    signal z0x   : sfixed(3 downto -28);
+    signal z0y   : sfixed(3 downto -28);
+    signal zx_o  : sfixed(3 downto -28);
+    signal zy_o  : sfixed(3 downto -28);
+    signal check : std_logic;
+    signal zi : std_logic;
+    
+    constant CLK_PERIOD : time := 10 ns;
+begin
+    uut: entity work.fractal_iter
+    port map (
+        clk => clk,
+        init => init,
+        enr => enr,
+        z0x => z0x,
+        z0y => z0y,
+        --zx_o => zx_o,
+        --zy_o => zy_o,
+        check => check,
+        zi => zi
+    );
+
+    clk <= not clk after CLK_PERIOD / 2;
+
+    simulation : process
+    begin
+        z0x <= to_sfixed(-1.1, 3, -28);
+        z0y <= to_sfixed(-1.3, 3, -28);
+        init <= '1';
+        ldi <= '1';
+        enr <= '1';
+        wait for CLK_PERIOD;
+        init <= '0';
+        ldi <= '0';
+        enr <= '0';
+        wait for CLK_PERIOD*2;
+        enr <= '1';
+        wait for CLK_PERIOD;
+        
+        z0x <= to_sfixed(0, 3, -28);
+        z0y <= to_sfixed(0, 3, -28);
+        init <= '1';
+        ldi <= '1';
+        enr <= '1';
+        wait for CLK_PERIOD;
+        init <= '0';
+        ldi <= '0';
+        enr <= '0';
+        wait for CLK_PERIOD*2;
+        enr <= '1';
+        wait for CLK_PERIOD;
+        
+        z0x <= to_sfixed(1.1, 3, -28);
+        z0y <= to_sfixed(1.6, 3, -28);
+        init <= '1';
+        ldi <= '1';
+        enr <= '1';
+        wait for CLK_PERIOD;
+        init <= '0';
+        ldi <= '0';
+        enr <= '0';
+        wait for CLK_PERIOD*2;
+        enr <= '1';
+        wait for CLK_PERIOD;
+        
+        z0x <= to_sfixed(-2, 3, -28);
+        z0y <= to_sfixed(1.5, 3, -28);
+        init <= '1';
+        ldi <= '1';
+        enr <= '1';
+        wait for CLK_PERIOD;
+        init <= '0';
+        ldi <= '0';
+        enr <= '0';
+        wait for CLK_PERIOD*2;
+        enr <= '1';
+        wait for CLK_PERIOD;
+        
+        z0x <= to_sfixed(1, 3, -28);
+        z0y <= to_sfixed(-1, 3, -28);
+        init <= '1';
+        ldi <= '1';
+        enr <= '1';
+        wait for CLK_PERIOD;
+        init <= '0';
+        ldi <= '0';
+        enr <= '0';
+        wait for CLK_PERIOD*2;
+        enr <= '1';
+        wait for CLK_PERIOD*2;
+        
+        assert now < 100 ns report "Simulation FInished." severity FAILURE;
+    end process;
+end Behavioral;

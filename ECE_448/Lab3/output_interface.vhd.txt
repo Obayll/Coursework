@@ -1,0 +1,32 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity output_interface is
+    Generic (
+        K : integer
+    );
+    Port (
+        SSEG1, SSEG2, SSEG3 : in STD_LOGIC_VECTOR(2 downto 0);
+        CLK : in STD_LOGIC;
+        RST : in STD_LOGIC;
+        AN : out STD_LOGIC_VECTOR(3 downto 0);
+        C : out STD_LOGIC_VECTOR(6 downto 0)
+    );
+end output_interface;
+
+architecture Behavioral of output_interface is
+begin
+SSD_DRIVER : entity work.ssd_driver(dataflow)
+    Generic map (
+        K => K
+    )
+    Port map (
+        Hex0 => SSEG1,
+        Hex1 => SSEG2,
+        Hex2 => SSEG3,
+        RST => RST,
+        CLK => CLK,
+        AN => AN,
+        SEG => C
+    );
+end Behavioral;
